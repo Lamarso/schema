@@ -77,7 +77,7 @@
 
   /* Toast-bekräftelser */
   #toasts{position:fixed; bottom:16px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; gap:8px; z-index:99; align-items:center;}
-  .toast{background:var(--ink); color:#fff; padding:10px 18px; border-radius:6px; font-weight:700; font-size:13px; box-shadow:0 4px 12px rgba(0,0,0,.3); animation:tin .2s ease;}
+  .toast{background:var(--ink); color:#fff; padding:10px 18px; border-radius:6px; font-weight:700; font-size:13px; box-shadow:0 4px 12px rgba(0,0,0,.3); animation:tin .2s ease; cursor:pointer; max-width:80vw;}
   .toast.warn{background:var(--warn); color:#000;}
   @keyframes tin{from{opacity:0; transform:translateY(8px)} to{opacity:1}}
   #saveStatus{font-size:12px; color:#9fa4ad;}
@@ -96,6 +96,34 @@
   }
   .print-legend{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;}
   .print-legend .chip{cursor:default; border:1px solid #000; padding:3px 10px; font-size:11px;}
+
+  /* ---------- Mobil (rör inte desktop) ---------- */
+  @media (max-width:640px){
+    body{font-size:13px;}
+    main{padding:8px;}
+    .section-body{padding:8px;}
+    header{padding:10px 12px; gap:8px;}
+    header h1{font-size:16px; width:100%;}
+    header input[type=date]{flex:1; min-width:120px;}
+    header .spacer{display:none;}
+    header button{flex:1 1 40%; padding:9px 6px; font-size:12px;}
+    section > h2{font-size:12px; padding:9px 10px;}
+    section > h2 .h2-actions{gap:6px; flex-wrap:wrap;}
+
+    /* Schema: tydlig scrollyta med större tap-mål och kompaktare namnkolumn */
+    .grid-wrap{-webkit-overflow-scrolling:touch; border:1px solid var(--line); border-radius:6px;}
+    table.grid td.slot{height:40px;}
+    table.grid td.name{max-width:88px; overflow:hidden; text-overflow:ellipsis; font-size:11px; padding:4px 6px;}
+
+    /* Inställningar & personalfält staplar snyggare */
+    .settings-row{gap:8px;}
+    .settings-row > span{width:100%;}
+    .settings-row input[type=time]{flex:1;}
+
+    /* Notiser fyller bredden så långa meddelanden ryms */
+    #toasts{left:0; right:0; transform:none; padding:0 10px; align-items:stretch;}
+    .toast{max-width:100%; text-align:center;}
+  }
 </style>
 </head>
 <body>
@@ -292,9 +320,12 @@ function toast(msg, warn){
   const t=document.createElement("div");
   t.className="toast"+(warn?" warn":"");
   t.textContent=msg;
+  t.title="Klicka för att stänga";
   document.getElementById("toasts").appendChild(t);
-  setTimeout(()=>{t.style.transition="opacity .3s"; t.style.opacity="0";},2400);
-  setTimeout(()=>t.remove(),2800);
+  const dur=Math.min(12000, Math.max(5000, msg.length*70)) + (warn?2000:0);
+  const dismiss=()=>{ t.style.transition="opacity .3s"; t.style.opacity="0"; setTimeout(()=>t.remove(),300); };
+  const timer=setTimeout(dismiss,dur);
+  t.addEventListener("click",()=>{ clearTimeout(timer); dismiss(); });
 }
 let saveTimer=null, loading=false;
 async function persist(){
@@ -575,6 +606,15 @@ function renderPalette(){
   er.onclick=()=>{paintErase=true; renderPalette();};
   pal.appendChild(er);
 
+  // Ångra-knapp direkt i paletten – nära där man målar (praktiskt på mobil om man
+  // råkar sätta fel färg i fel ruta).
+  const un=document.createElement("button");
+  un.className="chip";
+  un.style.background="#3a3d44"; un.style.color="#fff"; un.style.border="1px solid #3a3d44";
+  un.textContent="↩ Ångra";
+  un.onclick=()=>undo();
+  pal.appendChild(un);
+
   const leg=document.getElementById("printLegend");
   leg.innerHTML="";
   DEPTS.filter(d=>!d.special).forEach(d=>{
@@ -698,7 +738,11 @@ function renderGrid(cov, gaps){
 
         td.addEventListener("mousedown",ev=>{ev.preventDefault(); painting=true; pushUndo(); paint(p.id,i);});
         td.addEventListener("mouseenter",()=>{ if(painting) paint(p.id,i); });
-        td.addEventListener("touchstart",ev=>{ev.preventDefault(); pushUndo(); paint(p.id,i);},{passive:false});
+        // Mobil: låt swipe skrolla schemat sidleds; en tap (utan att flytta fingret)
+        // målar en enda ruta. preventDefault sker bara vid tap, så scroll aldrig blockeras.
+        td.addEventListener("touchstart",ev=>{ const t=ev.touches[0]; td._tx=t.clientX; td._ty=t.clientY; td._moved=false; },{passive:true});
+        td.addEventListener("touchmove",ev=>{ const t=ev.touches[0]; if(Math.abs(t.clientX-td._tx)>8 || Math.abs(t.clientY-td._ty)>8) td._moved=true; },{passive:true});
+        td.addEventListener("touchend",ev=>{ if(!td._moved){ ev.preventDefault(); pushUndo(); paint(p.id,i); } },{passive:false});
       }
       tr.appendChild(td);
     }

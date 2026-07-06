@@ -127,3 +127,12 @@ Tid ↔ slot: `slotStart(i) = 6*60 + i*30`. Dagen är 06:00–20:30, 29 slots (N
   samt anropet av den vid start). En ny enhet/tom `localStorage` startar nu med ett helt
   tomt schema istället för att fyllas med det gamla testschemat för de 14 ursprungs-
   personerna. Personalregistret (`xxl-personal`) hämtas fortfarande som vanligt.
+- 2026-07-06: Notiser (`toast`) syns längre (5–12 s beroende på längd, varningar extra)
+  och kan klickas bort. Man hann inte läsa dem förut.
+- 2026-07-06: Mobilanpassning (allt i `@media (max-width:640px)` + touch-hantering,
+  desktop/mus helt orört). Schemats `touchstart` preventDefault-målning ersatt: svep
+  skrollar schemat sidleds, en tap (utan att flytta fingret >8px) målar EN ruta. Mobil-
+  layout: mindre padding, kompakta header-knappar, högre rutor (40px) för tap-mål,
+  smalare namnkolumn med ellipsis, ram runt scrollytan, fullbredds-notiser.
+- 2026-07-06: La till "↩ Ångra"-knapp i paletten direkt efter "✕ Sudda" (anropar samma
+  `undo()`), så ångra finns nära där man målar – praktiskt på mobil vid feltryck.
