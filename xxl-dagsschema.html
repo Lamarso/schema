@@ -1,0 +1,1111 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XXL Dagsschema</title>
+<style>
+  :root{
+    --ink:#16181c; --paper:#f5f6f4; --panel:#ffffff; --line:#d8dbd4;
+    --accent:#b5cf1f; --accent-ink:#2a3005; --danger:#d32f2f; --warn:#e6a300; --ok:#2e7d32;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:"Segoe UI", Arial, sans-serif; background:var(--paper); color:var(--ink); font-size:14px;}
+  header{background:var(--ink); color:#fff; padding:14px 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
+  header h1{font-size:20px; font-weight:900; letter-spacing:1px; text-transform:uppercase;}
+  header h1 span{color:var(--accent);}
+  header .spacer{flex:1;}
+  header input[type=date]{padding:6px 8px; border-radius:4px; border:none; font-size:14px;}
+  button{cursor:pointer; border:none; border-radius:4px; padding:8px 14px; font-weight:700; font-size:13px;}
+  .btn-accent{background:var(--accent); color:var(--accent-ink);}
+  .btn-ghost{background:#3a3d44; color:#fff;}
+  .btn-small{padding:4px 10px; font-size:12px;}
+  main{padding:16px 20px; max-width:1500px; margin:0 auto;}
+  section{background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:16px; overflow:hidden;}
+  section > h2{font-size:13px; text-transform:uppercase; letter-spacing:1px; padding:10px 14px; background:#eef0ea; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px;}
+  section > h2 .h2-actions{margin-left:auto; display:flex; gap:8px;}
+  .section-body{padding:14px;}
+
+  /* Personal */
+  table.staff{width:100%; border-collapse:collapse;}
+  table.staff th, table.staff td{padding:6px 8px; text-align:left; border-bottom:1px solid var(--line); font-size:13px;}
+  table.staff input, table.staff select{padding:4px 6px; border:1px solid var(--line); border-radius:4px; font-size:13px;}
+  table.staff input.t{width:70px;}
+  table.staff input.n{width:160px;}
+  .dept-tags{display:flex; gap:4px; flex-wrap:wrap;}
+  .dept-tag{padding:2px 8px; border-radius:10px; font-size:11px; font-weight:700; cursor:pointer; border:2px solid transparent; opacity:.35;}
+  .dept-tag.on{opacity:1; border-color:var(--ink);}
+
+  /* Palett */
+  .palette{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
+  .chip{padding:7px 12px; border-radius:4px; font-weight:700; font-size:12px; border:3px solid transparent; cursor:pointer; text-transform:uppercase;}
+  .chip.sel{border-color:var(--ink); box-shadow:0 0 0 2px #fff inset;}
+  .hint{font-size:12px; color:#666; margin-top:8px;}
+
+  /* Schema-grid */
+  .grid-wrap{overflow-x:auto;}
+  table.grid{border-collapse:collapse; user-select:none;}
+  table.grid th, table.grid td{border:1px solid #9aa093; font-size:11px; text-align:center;}
+  table.grid th{background:#eef0ea; padding:4px 2px; font-weight:700;}
+  table.grid td.name{background:#fff; font-weight:800; text-align:left; padding:4px 8px; white-space:nowrap; position:sticky; left:0; z-index:2; border-right:2px solid var(--ink); font-size:12px; text-transform:uppercase;}
+  table.grid td.slot{width:34px; min-width:34px; height:30px; cursor:pointer; position:relative;}
+  table.grid td.slot.na{background:repeating-linear-gradient(45deg,#f0f0f0,#f0f0f0 4px,#e2e2e2 4px,#e2e2e2 8px); cursor:not-allowed;}
+  table.grid td.slot .tm{font-size:9px; font-weight:800; color:#000; background:rgba(255,255,255,.75); border-radius:2px; padding:0 1px; position:absolute; top:1px; left:1px;}
+  table.grid td.slot.gapmark{outline:2px dashed var(--danger); outline-offset:-2px;}
+
+  /* Täckning */
+  table.cov{border-collapse:collapse;}
+  table.cov th, table.cov td{border:1px solid var(--line); padding:4px 8px; font-size:12px; text-align:center;}
+  table.cov td.deptname{text-align:left; font-weight:700;}
+  td.c-ok{background:#e5f2e5; color:var(--ok); font-weight:700;}
+  td.c-gap{background:#fbdcdc; color:var(--danger); font-weight:900;}
+  td.c-half{background:#fdf1d5; color:#8a6100; font-weight:700;}
+  td.c-off{background:#f4f4f4; color:#bbb;}
+
+  /* Varningar */
+  .warns{display:flex; flex-direction:column; gap:10px;}
+  .warn-item{border-left:5px solid var(--danger); background:#fff5f5; padding:10px 12px; border-radius:0 6px 6px 0;}
+  .warn-item.soft{border-left-color:var(--warn); background:#fffaf0;}
+  .warn-item b{display:block; margin-bottom:6px;}
+  .sugg{display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:4px; font-size:13px;}
+  .all-ok{border-left:5px solid var(--ok); background:#f2f9f2; padding:10px 12px; border-radius:0 6px 6px 0; font-weight:700; color:var(--ok);}
+
+  .settings-row{display:flex; gap:16px; align-items:center; flex-wrap:wrap; font-size:13px;}
+  .settings-row input[type=time]{padding:4px; border:1px solid var(--line); border-radius:4px;}
+  .req-list{display:flex; gap:10px; flex-wrap:wrap;}
+  .req-list label{display:flex; align-items:center; gap:4px; font-size:12px; padding:3px 8px; border-radius:4px; border:1px solid var(--line);}
+
+  /* Toast-bekräftelser */
+  #toasts{position:fixed; bottom:16px; left:50%; transform:translateX(-50%); display:flex; flex-direction:column; gap:8px; z-index:99; align-items:center;}
+  .toast{background:var(--ink); color:#fff; padding:10px 18px; border-radius:6px; font-weight:700; font-size:13px; box-shadow:0 4px 12px rgba(0,0,0,.3); animation:tin .2s ease;}
+  .toast.warn{background:var(--warn); color:#000;}
+  @keyframes tin{from{opacity:0; transform:translateY(8px)} to{opacity:1}}
+  #saveStatus{font-size:12px; color:#9fa4ad;}
+
+  /* Print */
+  .print-title{display:none;}
+  @media print{
+    @page{size:landscape; margin:8mm;}
+    body{background:#fff;}
+    header, #staffSec, #covSec, #warnSec, #setSec, .palette-actions, .hint, .h2-actions{display:none !important;}
+    section{border:none; margin:0;}
+    section > h2{display:none;}
+    .print-title{display:block; text-align:center; font-size:26px; font-weight:900; text-transform:uppercase; margin-bottom:8px;}
+    .grid-wrap{overflow:visible;}
+    .print-legend{display:flex !important;}
+  }
+  .print-legend{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;}
+  .print-legend .chip{cursor:default; border:1px solid #000; padding:3px 10px; font-size:11px;}
+</style>
+</head>
+<body>
+<header>
+  <h1>XXL <span>Dagsschema</span></h1>
+  <input type="date" id="dateInput">
+  <span id="saveStatus"></span>
+  <div class="spacer"></div>
+  <button class="btn-ghost" id="btnUndo">↩ Ångra</button>
+  <button class="btn-ghost" id="btnAuto">Auto-placera alla</button>
+  <button class="btn-ghost" id="btnFix">Fixa luckor</button>
+  <button class="btn-ghost" id="btnLunch">Planera luncher</button>
+  <button class="btn-ghost" id="btnClear">Rensa schema</button>
+  <button class="btn-ghost" id="btnSave">Spara dag</button>
+  <button class="btn-ghost" id="btnCopy">Kopiera chatt-text</button>
+  <button class="btn-accent" id="btnPng">Skapa bild</button>
+  <button class="btn-ghost" id="btnPrint">Skriv ut</button>
+</header>
+<main>
+
+<section id="setSec">
+  <h2>Inställningar</h2>
+  <div class="section-body">
+    <div class="settings-row">
+      <span><b>Butikens öppettider:</b></span>
+      <input type="time" id="openStart" value="10:00"> – <input type="time" id="openEnd" value="20:00">
+      <span style="margin-left:20px"><b>Lunchfönster:</b></span>
+      <input type="time" id="lunchStart" value="12:00"> – <input type="time" id="lunchEnd" value="14:00"> <span style="color:#666">(30 min för alla)</span>
+      <span>Max <select id="maxLunch" style="padding:4px;border:1px solid var(--line);border-radius:4px"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select> på lunch samtidigt</span>
+      <span style="margin-left:20px"><b>Min-bemanning per avdelning:</b></span>
+      <span class="req-list" id="reqList"></span>
+      <span class="hint" style="margin:0">Första och sista öppettimmen räcker alltid 1 person, oavsett min. Under en lunch räcker det också att 1 person är kvar på avdelningen.</span>
+    </div>
+  </div>
+</section>
+
+<section id="staffSec">
+  <h2>Personal idag <span class="h2-actions"><button class="btn-accent btn-small" id="btnSaveStaff">💾 Spara personal</button><button class="btn-accent btn-small" id="btnAddStaff">+ Lägg till person</button></span></h2>
+  <div class="section-body" style="overflow-x:auto">
+    <table class="staff">
+      <thead><tr><th>Namn</th><th>Börjar</th><th>Slutar</th><th>Lunch</th><th>Van vid (klicka för att slå på/av)</th><th></th></tr></thead>
+      <tbody id="staffBody"></tbody>
+    </table>
+    <p class="hint">Automatiken (Auto-placera, Fixa luckor, lunchtäckare) placerar ALDRIG någon på en avdelning de inte är vana vid. Förslagen i varningspanelen kan däremot föreslå vem som helst – vana-personer först – eftersom det är du som klickar.</p>
+  </div>
+</section>
+
+<section>
+  <h2>Schema <span class="h2-actions"><span class="hint" style="margin:0">Välj färg nedan, klicka & dra i schemat för att måla</span></span></h2>
+  <div class="section-body">
+    <div class="print-title" id="printTitle"></div>
+    <div class="palette" id="palette"></div>
+    <p class="hint">Randiga rutor = personen jobbar inte då. Röd streckad ram = lucka personen kan täcka. Prick i hörnet = manuellt placerad – rörs aldrig av Auto-placera/Fixa luckor (sudda för att låsa upp).</p>
+    <div class="grid-wrap" style="margin-top:10px">
+      <table class="grid" id="gridTable"></table>
+    </div>
+    <div class="print-legend" id="printLegend"></div>
+  </div>
+</section>
+
+<section id="covSec">
+  <h2>Täckning per timme</h2>
+  <div class="section-body" style="overflow-x:auto">
+    <table class="cov" id="covTable"></table>
+    <p class="hint">Siffran = antal personer på avdelningen den timmen. ½ = bara halva timmen täckt. Grått = utanför öppettid.</p>
+  </div>
+</section>
+
+<section id="warnSec">
+  <h2>Varningar & förslag</h2>
+  <div class="section-body warns" id="warnBox"></div>
+</section>
+
+</main>
+<div id="toasts"></div>
+<script>
+(function(){
+"use strict";
+
+/* ---------- Lagringsadapter: claude.ai-lagring om den finns, annars webbläsarens localStorage ---------- */
+const store = (typeof window!=="undefined" && window.storage) ? window.storage : {
+  get: async k => { const v=localStorage.getItem(k); return v!=null ? {key:k, value:v} : null; },
+  set: async (k,v) => { localStorage.setItem(k,v); return {key:k, value:v}; }
+};
+
+/* ---------- Grunddata ---------- */
+const DAY_START = 6*60, DAY_END = 20.5*60, STEP = 30;
+const NSLOTS = (DAY_END - DAY_START)/STEP; // 29
+
+const DEPTS = [
+  {id:"klader",  name:"Kläder",       color:"#29ABE2", text:"#000", required:true},
+  {id:"lyskor",  name:"LY - Skor",    color:"#ED1C24", text:"#000", required:true},
+  {id:"kassa",   name:"Kassa",        color:"#A7A9AC", text:"#000", required:true},
+  {id:"sport",   name:"SRT - Sport",  color:"#FFF200", text:"#000", required:true},
+  {id:"ohskor",  name:"SRT/OH - Skor",color:"#EC008C", text:"#000", required:true},
+  {id:"sboh",    name:"SB & OH",      color:"#8DC63F", text:"#000", required:true},
+  {id:"verkstad",name:"Verkstad",     color:"#00A651", text:"#000", required:false},
+  {id:"lager",   name:"Lager",        color:"#E5C8E8", text:"#000", required:false},
+  {id:"mote",    name:"Möte",         color:"#000000", text:"#fff", required:false},
+  {id:"uppgift", name:"Uppgift",      color:"#C1691F", text:"#fff", required:false},
+  {id:"lunch",   name:"Lunch",        color:"#FFFFFF", text:"#000", required:false, special:true}
+];
+const deptById = id => DEPTS.find(d=>d.id===id);
+
+let state = {
+  staff: [
+    {"id":1,"name":"Fredde","start":"06:00","end":"15:00","home":["lager"]},
+    {"id":2,"name":"Rebecca","start":"06:00","end":"12:00","home":["lager"],"noLunch":true},
+    {"id":3,"name":"Amanda","start":"07:00","end":"15:00","home":["kassa"]},
+    {"id":4,"name":"Oskar","start":"07:00","end":"14:00","home":["lyskor"]},
+    {"id":5,"name":"Toni","start":"08:00","end":"17:00","home":["verkstad"]},
+    {"id":6,"name":"Beata","start":"09:45","end":"19:00","home":["klader"]},
+    {"id":7,"name":"Marcus","start":"09:45","end":"19:00","home":["sboh","verkstad"]},
+    {"id":8,"name":"Anders","start":"11:00","end":"16:00","home":["sport"]},
+    {"id":9,"name":"Elias P","start":"11:00","end":"20:00","home":["sport","sboh","klader"]},
+    {"id":10,"name":"Jacob","start":"11:00","end":"20:15","home":["sboh"]},
+    {"id":11,"name":"Noah A","start":"11:00","end":"19:00","home":["sport","kassa","ohskor"]},
+    {"id":12,"name":"Tilde","start":"11:00","end":"20:15","home":["kassa"]},
+    {"id":13,"name":"Noah B","start":"12:00","end":"20:00","home":["lyskor"]},
+    {"id":14,"name":"Johanna H","start":"16:30","end":"20:00","home":["sport","ohskor"]}
+  ],
+  assignments:{}, // staffId -> {slotIdx: deptId}
+  manual:{},      // staffId -> {slotIdx: true} = Rebeccas egna placeringar, rörs aldrig av auto
+  mins: Object.fromEntries(DEPTS.filter(d=>!d.special).map(d=>[d.id, d.required?1:0])),
+  openStart:"10:00", openEnd:"20:00",
+  lunchStart:"12:00", lunchEnd:"14:00", lunchLen:30, maxLunch:2,
+  date: new Date().toISOString().slice(0,10)
+};
+let nextId = 15;
+let selectedDept = "klader";
+let painting = false, paintErase = false;
+
+/* ---------- Hjälpare ---------- */
+const parseT = s => { if(!s) return null; const m = s.replace(".",":").match(/^(\d{1,2}):?(\d{2})?$/); if(!m) return null; return (+m[1])*60 + (+(m[2]||0)); };
+const fmtT = min => String(Math.floor(min/60)).padStart(2,"0") + ":" + String(min%60).padStart(2,"0");
+const slotStart = i => DAY_START + i*STEP;
+const worksSlot = (p,i) => { const s=parseT(p.start), e=parseT(p.end); return s!=null && e!=null && s < slotStart(i)+STEP && e > slotStart(i); };
+const fullSlot  = (p,i) => { const s=parseT(p.start), e=parseT(p.end); return s!=null && e!=null && s <= slotStart(i) && e >= slotStart(i)+STEP; };
+const getAsg = (pid,i) => (state.assignments[pid]||{})[i] || null;
+const setAsg = (pid,i,dep) => { if(!state.assignments[pid]) state.assignments[pid]={}; if(dep) state.assignments[pid][i]=dep; else delete state.assignments[pid][i]; };
+const minFor = d => state.mins[d]||0;
+// Effektiv min-bemanning för en viss halvtimme: första och sista öppettimmen
+// räcker det alltid med 1 person, även om avdelningens min är högre.
+// Utanför öppettid ställs inga krav.
+const minAt = (d,i)=>{
+  const m=minFor(d);
+  if(m===0) return 0;
+  const os=parseT(state.openStart), oe=parseT(state.openEnd), t=slotStart(i);
+  if(t<os || t>=oe) return 0;
+  if(t < os+60 || t >= oe-60) return 1;
+  return m;
+};
+const reqIds = () => Object.keys(state.mins).filter(k=>state.mins[k]>0);
+// Vilken avdelning en lunchande person "hör till": närmaste placering före lunchen,
+// annars efter, annars första vanan
+function lunchDeptOf(p,i){
+  for(let k=i-1;k>=0;k--){ if(!worksSlot(p,k)) break; const a=getAsg(p.id,k); if(a&&a!=="lunch") return a; }
+  for(let k=i+1;k<NSLOTS;k++){ if(!worksSlot(p,k)) break; const a=getAsg(p.id,k); if(a&&a!=="lunch") return a; }
+  return p.home[0]||null;
+}
+function lunchersOn(d,i){
+  let c=0;
+  state.staff.forEach(p=>{ if(getAsg(p.id,i)==="lunch" && worksSlot(p,i) && lunchDeptOf(p,i)===d) c++; });
+  return c;
+}
+// Effektivt bemanningskrav: under halvtimmar då någon från avdelningen är på lunch
+// ignoreras min-bemanning över 1 – den som är kvar får vara ensam. Avdelningen får
+// dock aldrig stå helt tom.
+const reqAt = (d,i)=>{
+  const m=minAt(d,i);
+  if(m<=1) return m;
+  return lunchersOn(d,i)>0 ? 1 : m;
+};
+const isManual = (pid,i) => !!(state.manual[pid]||{})[i];
+const setManual = (pid,i,val) => { if(!state.manual[pid]) state.manual[pid]={}; if(val) state.manual[pid][i]=true; else delete state.manual[pid][i]; };
+
+
+/* ---------- Förifyllt testschema (appliceras per namn om dagen är tom) ---------- */
+const SEED={"Fredde":{"slots":{"0":"lager","1":"lager","2":"lager","3":"lager","4":"lager","5":"lager","6":"lager","7":"lager","8":"lager","9":"lager","10":"lager","11":"lager","12":"lunch","13":"lager","14":"lager","15":"lager","16":"lager","17":"lager"},"home":["lager"],"noLunch":false},"Rebecca":{"slots":{"0":"lager","1":"lager","2":"lager","3":"lager","4":"lager","5":"lager","6":"lager","7":"lager","8":"lager","9":"lager","10":"lager","11":"lager"},"home":["lager"],"noLunch":true},"Amanda":{"slots":{"2":"kassa","3":"kassa","4":"kassa","5":"kassa","6":"kassa","7":"kassa","8":"kassa","9":"kassa","10":"kassa","11":"kassa","12":"kassa","13":"lunch","14":"kassa","15":"kassa","16":"kassa","17":"kassa"},"home":["kassa"],"noLunch":false},"Oskar":{"slots":{"2":"lyskor","3":"lyskor","4":"lyskor","5":"lyskor","6":"lyskor","7":"lyskor","8":"lyskor","9":"lyskor","10":"lyskor","11":"lyskor","12":"lunch","13":"lyskor","14":"lyskor","15":"lyskor"},"home":["lyskor"],"noLunch":false},"Toni":{"slots":{"4":"verkstad","5":"verkstad","6":"verkstad","7":"verkstad","8":"verkstad","9":"verkstad","10":"verkstad","11":"verkstad","12":"verkstad","13":"lunch","14":"verkstad","15":"verkstad","16":"verkstad","17":"verkstad","18":"verkstad","19":"verkstad","20":"verkstad","21":"verkstad"},"home":["verkstad"],"noLunch":false},"Beata":{"slots":{"7":"klader","8":"klader","9":"klader","10":"klader","11":"klader","12":"klader","13":"klader","14":"lunch","15":"klader","16":"klader","17":"klader","18":"klader","19":"klader","20":"klader","21":"klader","22":"klader","23":"klader","24":"klader","25":"klader"},"home":["klader"],"noLunch":false},"Marcus":{"slots":{"7":"sboh","8":"sboh","9":"sboh","10":"sboh","11":"sboh","12":"sboh","13":"sboh","14":"lunch","15":"sboh","16":"sboh","17":"sboh","18":"sboh","19":"sboh","20":"sboh","21":"sboh","22":"sboh","23":"sboh","24":"sboh","25":"sboh"},"home":["sboh","verkstad"],"noLunch":false},"Anders":{"slots":{"10":"sport","11":"sport","12":"sport","13":"sport","14":"sport","15":"sport","16":"sport","17":"sport","18":"sport","19":"sport"},"home":["sport"],"noLunch":false},"Elias P":{"slots":{"10":"sport","11":"sport","12":"sport","13":"sport","14":"klader","15":"lunch","16":"sport","17":"sport","18":"sport","19":"sport","20":"sport","21":"sport","22":"sport","23":"sport","24":"sport","25":"sport","26":"klader","27":"klader"},"home":["sport","sboh","klader"],"noLunch":false},"Jacob":{"slots":{"10":"sboh","11":"sboh","12":"sboh","13":"sboh","14":"sboh","15":"sboh","16":"lunch","17":"sboh","18":"sboh","19":"sboh","20":"sboh","21":"sboh","22":"sboh","23":"sboh","24":"sboh","25":"sboh","26":"sboh","27":"sboh","28":"sboh"},"home":["sboh"],"noLunch":false},"Noah A":{"slots":{"10":"ohskor","11":"ohskor","12":"ohskor","13":"ohskor","14":"ohskor","15":"ohskor","16":"ohskor","17":"ohskor","18":"ohskor","19":"ohskor","20":"ohskor","21":"lunch","22":"ohskor","23":"ohskor","24":"ohskor","25":"ohskor"},"home":["sport","kassa","ohskor"],"noLunch":false},"Tilde":{"slots":{"10":"kassa","11":"kassa","12":"kassa","13":"kassa","14":"kassa","15":"kassa","16":"lunch","17":"kassa","18":"kassa","19":"kassa","20":"kassa","21":"kassa","22":"kassa","23":"kassa","24":"kassa","25":"kassa","26":"kassa","27":"kassa","28":"kassa"},"home":["kassa"],"noLunch":false},"Noah B":{"slots":{"12":"lyskor","13":"lyskor","14":"lyskor","15":"lunch","16":"lyskor","17":"lyskor","18":"lyskor","19":"lyskor","20":"lyskor","21":"lyskor","22":"lyskor","23":"lyskor","24":"lyskor","25":"lyskor","26":"lyskor","27":"lyskor"},"home":["lyskor"],"noLunch":false},"Johanna H":{"slots":{"21":"ohskor","22":"sport","23":"sport","24":"sport","25":"sport","26":"sport","27":"sport"},"home":["sport","ohskor"],"noLunch":false}};
+function applySeedIfEmpty(){
+  const total=Object.values(state.assignments||{}).reduce((a,m)=>a+Object.keys(m).length,0);
+  if(total>0 || state.seeded) return;
+  let hit=0;
+  state.staff.forEach(p=>{
+    const sd=SEED[p.name];
+    if(!sd || !Object.keys(sd.slots).length) return;
+    state.assignments[p.id]=Object.assign({}, sd.slots);
+    sd.home.forEach(h=>{ if(!p.home.includes(h)) p.home.push(h); });
+    if(sd.noLunch) p.noLunch=true;
+    hit++;
+  });
+  if(hit){ state.seeded=true; toast("Testschemat inlagt för "+hit+" personer"); }
+}
+
+/* ---------- Ångra ---------- */
+const undoStack=[];
+function pushUndo(){
+  undoStack.push(JSON.stringify({staff:state.staff, assignments:state.assignments, manual:state.manual}));
+  if(undoStack.length>20) undoStack.shift();
+}
+function undo(){
+  if(!undoStack.length){ toast("Inget att ångra"); return; }
+  const s=JSON.parse(undoStack.pop());
+  state.staff=s.staff; state.assignments=s.assignments; state.manual=s.manual;
+  renderAll();
+  toast("Ångrat");
+}
+
+/* ---------- Toast & autospar ---------- */
+function toast(msg, warn){
+  const t=document.createElement("div");
+  t.className="toast"+(warn?" warn":"");
+  t.textContent=msg;
+  document.getElementById("toasts").appendChild(t);
+  setTimeout(()=>{t.style.transition="opacity .3s"; t.style.opacity="0";},2400);
+  setTimeout(()=>t.remove(),2800);
+}
+let saveTimer=null, loading=false;
+async function persist(){
+  try{
+    await store.set("xxl-schema-"+state.date, JSON.stringify(state));
+    await saveRegister();
+    const n=new Date();
+    document.getElementById("saveStatus").textContent="✓ Sparat "+String(n.getHours()).padStart(2,"0")+":"+String(n.getMinutes()).padStart(2,"0");
+    return true;
+  }catch(e){
+    document.getElementById("saveStatus").textContent="⚠ Kunde inte spara";
+    return false;
+  }
+}
+function scheduleAutosave(){
+  if(loading) return;
+  clearTimeout(saveTimer);
+  saveTimer=setTimeout(persist,800);
+}
+async function saveRegister(){
+  const reg=state.staff.map(p=>({name:p.name, start:p.start, end:p.end, home:p.home, noLunch:!!p.noLunch}));
+  await store.set("xxl-personal", JSON.stringify(reg));
+}
+async function loadRegister(){
+  try{
+    const r=await store.get("xxl-personal");
+    if(r && r.value){
+      const reg=JSON.parse(r.value);
+      if(Array.isArray(reg) && reg.length){
+        state.staff=reg.map((p,i)=>({id:i+1, ...p}));
+        nextId=reg.length+1;
+        return true;
+      }
+    }
+  }catch(e){}
+  return false;
+}
+
+/* ---------- Auto-placering ---------- */
+function autoPlaceAll(){
+  pushUndo();
+  // 1. Rensa alla auto-placeringar (manuella rutor rörs inte) och lägg baslinje från vana
+  state.staff.forEach(p=>{
+    for(let i=0;i<NSLOTS;i++){
+      if(!worksSlot(p,i)) continue;
+      if(isManual(p.id,i)) continue;
+      setAsg(p.id,i, p.home[0]||null);
+    }
+  });
+  // 2. Flytta folk tills alla avdelningar når sin min-bemanning
+  const moves=fixGaps();
+  // 3. Planera luncher
+  const res=planLunches();
+  renderAll();
+  toast("Auto-placering klar – "+moves.length+" omflyttningar för täckning, "+res.placed.length+" luncher");
+  if(res.failed.length) toast("Lunch gick inte att placera för: "+res.failed.join(", "), true);
+  const remaining=findGaps(coverage());
+  if(remaining.length) toast(remaining.length+" luckor kunde inte lösas automatiskt – se Varningar & förslag", true);
+}
+
+/* ---------- Lucktäckningsmotor ---------- */
+function applyAuto(pid, gap){
+  const p=state.staff.find(x=>x.id===pid);
+  for(let i=gap.from;i<=gap.to;i++){
+    if(p && worksSlot(p,i) && !isManual(pid,i)) setAsg(pid,i,gap.dept);
+  }
+}
+function fixGaps(){
+  const moves=[];
+  for(let iter=0; iter<100; iter++){
+    const cov=coverage();
+    const gaps=findGaps(cov);
+    if(!gaps.length) break;
+    let applied=false;
+    for(const g of gaps){
+      const sugg=suggestionsFor(g,cov,true).filter(sg=>{
+        // kandidaten måste ha minst en icke-manuell ruta i luckan
+        for(let i=g.from;i<=g.to;i++) if(worksSlot(sg.p,i) && !isManual(sg.p.id,i)) return true;
+        return false;
+      });
+      if(sugg.length){
+        applyAuto(sugg[0].p.id, g);
+        moves.push(sugg[0].p.name+" → "+deptById(g.dept).name);
+        applied=true;
+        break;
+      }
+    }
+    if(!applied) break; // inga fler luckor går att lösa
+  }
+  return moves;
+}
+
+/* ---------- Lunchplanering ---------- */
+function needsLunch(p){
+  if(p.noLunch) return false;
+  const s=parseT(p.start), e=parseT(p.end);
+  return s!=null && e!=null && e-s>=360;
+}
+function hasLunch(p){
+  for(let i=0;i<NSLOTS;i++) if(getAsg(p.id,i)==="lunch") return true;
+  return false;
+}
+function planLunches(){
+  const ws=parseT(state.lunchStart), we=parseT(state.lunchEnd);
+  const len=+state.lunchLen, nB=len/STEP, MAXL=+state.maxLunch||2; // max antal på lunch samtidigt (inställbart)
+  const people=state.staff
+    .filter(p=>needsLunch(p) && !hasLunch(p))
+    .sort((a,b)=>parseT(a.end)-parseT(b.end)); // slutar tidigt = lunch tidigt, slutar sent = lunch sent
+  const failed=[], placedNames=[];
+  // räkna redan inlagda luncher (t.ex. manuellt målade)
+  const lunchCnt=new Array(NSLOTS).fill(0);
+  state.staff.forEach(p=>{ for(let i=0;i<NSLOTS;i++) if(getAsg(p.id,i)==="lunch") lunchCnt[i]++; });
+  const n=people.length, span=(we-len)-ws;
+  const prefOf = idx => n>1 ? ws + Math.round((idx/(n-1))*span/STEP)*STEP : ws;
+
+  // Kandidatblock i två grupper: inom fönstret (närmast önskad tid) och utanför
+  // (tidigast 2 h in i passet, senast 1 h före passets slut, närmast fönstret först)
+  const blocksFor=(p,pref)=>{
+    const s=parseT(p.start), e=parseT(p.end);
+    const primary=[], fallback=[];
+    for(let bs=DAY_START; bs+len<=DAY_END; bs+=STEP){
+      if(bs>=ws && bs+len<=we){ if(bs>=s && bs+len<=e) primary.push(bs); }
+      else if(bs>=s+120 && bs+len<=e-60) fallback.push(bs);
+    }
+    primary.sort((a,b)=>Math.abs(a-pref)-Math.abs(b-pref) || a-b);
+    const distW = bs => bs>=we ? bs-we : ws-(bs+len);
+    fallback.sort((a,b)=>distW(a)-distW(b) || a-b);
+    return {primary, fallback};
+  };
+
+  // allowCover=true: om avdelningen skulle tömmas, flytta in en täckare (som när
+  // Jacob täcker SB & OH under Marcus lunch)
+  const tryBlocks=(p,blocks,allowCover)=>{
+    const cov=coverage();
+    for(const bs of blocks){
+      const i0=(bs-DAY_START)/STEP;
+      let ok=true, cDept=null, cFrom=null, cTo=null;
+      for(let k=i0;k<i0+nB;k++){
+        if(k>=NSLOTS || !fullSlot(p,k)){ok=false;break;}
+        const cur=getAsg(p.id,k);
+        if(cur==="mote"||cur==="lunch"){ok=false;break;}
+        if(isManual(p.id,k)){ok=false;break;} // skriv aldrig över Rebeccas placeringar
+        if(lunchCnt[k]>=MAXL){ok=false;break;} // max antal på lunch samtidigt
+        if(cur && cov[cur][k]-1 < Math.min(minAt(cur,k),1)){
+          // avdelningen skulle stå helt tom – behöver täckare
+          if(!allowCover){ok=false;break;}
+          if(cDept && cDept!==cur){ok=false;break;}
+          cDept=cur; if(cFrom===null)cFrom=k; cTo=k;
+        }
+      }
+      if(!ok) continue;
+      let coverName=null;
+      if(cDept){
+        // hitta en täckare (van vid avdelningen) som kan hoppa in under hela lunchen
+        const g={dept:cDept, from:cFrom, to:cTo, need:minFor(cDept)};
+        const cands=suggestionsFor(g,cov,true).filter(sg=>{
+          if(sg.p.id===p.id) return false;
+          for(let i=g.from;i<=g.to;i++){
+            if(!worksSlot(sg.p,i) || isManual(sg.p.id,i) || getAsg(sg.p.id,i)==="lunch") return false;
+          }
+          return true;
+        });
+        if(!cands.length) continue;
+        applyAuto(cands[0].p.id, g);
+        coverName=cands[0].p.name;
+      }
+      for(let k=i0;k<i0+nB;k++){ setAsg(p.id,k,"lunch"); lunchCnt[k]++; }
+      const outside = !(bs>=ws && bs+len<=we);
+      placedNames.push(p.name+" "+fmtT(bs)+(outside?"*":"")+(coverName?" ("+coverName+" täcker)":""));
+      return true;
+    }
+    return false;
+  };
+
+  // En person i taget, i slutordning. Prioritet per person:
+  // 1) fönstret utan täckare  2) fönstret med täckare
+  // 3) reservtid utan täckare 4) reservtid med täckare
+  // Gratis lösningar vinner alltid över lösningar som kräver att någon flyttas.
+  people.forEach((p,idx)=>{
+    const {primary, fallback}=blocksFor(p, prefOf(idx));
+    const done =
+      tryBlocks(p, primary, false) ||
+      tryBlocks(p, primary, true)  ||
+      tryBlocks(p, fallback, false)||
+      tryBlocks(p, fallback, true);
+    if(!done) failed.push(p.name);
+  });
+  return {placed:placedNames, failed};
+}
+
+/* ---------- Täckningsanalys ---------- */
+function coverage(){
+  // per slot per dept: antal (lunch räknas inte)
+  const cov = {};
+  DEPTS.filter(d=>!d.special).forEach(d=>cov[d.id]=new Array(NSLOTS).fill(0));
+  state.staff.forEach(p=>{
+    for(let i=0;i<NSLOTS;i++){
+      const d = getAsg(p.id,i);
+      if(d && cov[d]!==undefined && worksSlot(p,i)) cov[d][i]++;
+    }
+  });
+  return cov;
+}
+function openSlots(){
+  const os=parseT(state.openStart), oe=parseT(state.openEnd);
+  const arr=[];
+  for(let i=0;i<NSLOTS;i++) if(slotStart(i)>=os && slotStart(i)<oe) arr.push(i);
+  return arr;
+}
+function findGaps(cov){
+  const gaps=[]; // {dept, from, to, need}
+  reqIds().forEach(d=>{
+    let run=null;
+    for(let i=0;i<NSLOTS;i++){
+      const need=reqAt(d,i);
+      const isGap = need>0 && cov[d][i]<need;
+      if(isGap){
+        if(run){ run.to=i; run.need=Math.max(run.need,need); }
+        else run={dept:d, from:i, to:i, need};
+      }
+      else if(run){ gaps.push(run); run=null; }
+    }
+    if(run) gaps.push(run);
+  });
+  return gaps;
+}
+function suggestionsFor(gap, cov, onlyKnows){
+  // Kandidater: jobbar under hela/delar av luckan, och kan lämna sin nuvarande plats.
+  // onlyKnows=true (används av all automatik): bara personer som är vana vid avdelningen.
+  const cand=[];
+  state.staff.forEach(p=>{
+    if(onlyKnows && !p.home.includes(gap.dept)) return;
+    let slots=0, movable=true, fromDepts=new Set();
+    for(let i=gap.from;i<=gap.to;i++){
+      if(!worksSlot(p,i)) continue;
+      slots++;
+      const cur=getAsg(p.id,i);
+      if(cur==="lunch"||cur==="mote"){ movable=false; break; }
+      if(cur){
+        fromDepts.add(cur);
+        if(cov[cur][i]-1 < reqAt(cur,i)){ movable=false; break; } // skulle skapa ny lucka
+      }
+    }
+    if(slots>0 && movable){
+      cand.push({p, slots, knows:p.home.includes(gap.dept), from:[...fromDepts].map(d=>deptById(d)?deptById(d).name:d).join(", ")||"oplacerad"});
+    }
+  });
+  cand.sort((a,b)=> (b.knows-a.knows) || (b.slots-a.slots));
+  return cand.slice(0,3);
+}
+function applySuggestion(pid, gap){
+  pushUndo();
+  const p=state.staff.find(x=>x.id===pid);
+  for(let i=gap.from;i<=gap.to;i++){
+    if(p && worksSlot(p,i)){ setAsg(pid,i,gap.dept); setManual(pid,i,true); }
+  }
+  renderAll();
+  if(p) toast(p.name+" → "+deptById(gap.dept).name+" "+fmtT(slotStart(gap.from))+"–"+fmtT(slotStart(gap.to)+STEP));
+}
+
+/* ---------- Rendering ---------- */
+function renderPalette(){
+  const pal=document.getElementById("palette");
+  pal.innerHTML="";
+  DEPTS.forEach(d=>{
+    const c=document.createElement("button");
+    c.className="chip"+(selectedDept===d.id?" sel":"");
+    c.style.background=d.color; c.style.color=d.text;
+    if(d.id==="lunch") c.style.border= selectedDept===d.id ? "3px solid var(--ink)" : "1px solid #999";
+    c.textContent=d.name;
+    c.onclick=()=>{selectedDept=d.id; paintErase=false; renderPalette();};
+    pal.appendChild(c);
+  });
+  const er=document.createElement("button");
+  er.className="chip"+(paintErase?" sel":"");
+  er.style.background="#fff"; er.style.border= paintErase?"3px solid var(--ink)":"1px dashed #999";
+  er.textContent="✕ Sudda";
+  er.onclick=()=>{paintErase=true; renderPalette();};
+  pal.appendChild(er);
+
+  const leg=document.getElementById("printLegend");
+  leg.innerHTML="";
+  DEPTS.filter(d=>!d.special).forEach(d=>{
+    const s=document.createElement("span");
+    s.className="chip"; s.style.background=d.color; s.style.color=d.text; s.textContent=d.name;
+    leg.appendChild(s);
+  });
+}
+
+function renderReqList(){
+  const box=document.getElementById("reqList");
+  box.innerHTML="";
+  DEPTS.filter(d=>!d.special && d.id!=="mote" && d.id!=="uppgift").forEach(d=>{
+    const l=document.createElement("label");
+    l.appendChild(document.createTextNode(d.name+" "));
+    const sel=document.createElement("select");
+    [0,1,2,3].forEach(n=>{const o=document.createElement("option");o.value=n;o.textContent=n;sel.appendChild(o);});
+    sel.value=String(minFor(d.id));
+    sel.onchange=()=>{ state.mins[d.id]=+sel.value; renderAll(); };
+    l.appendChild(sel);
+    box.appendChild(l);
+  });
+}
+
+function renderStaff(){
+  const tb=document.getElementById("staffBody");
+  tb.innerHTML="";
+  state.staff.forEach(p=>{
+    const tr=document.createElement("tr");
+
+    const tdN=document.createElement("td");
+    const inN=document.createElement("input"); inN.className="n"; inN.value=p.name;
+    inN.onchange=()=>{p.name=inN.value; renderAll(); persist();};
+    tdN.appendChild(inN); tr.appendChild(tdN);
+
+    [["start","start"],["end","slut"]].forEach(([k])=>{
+      const td=document.createElement("td");
+      const inp=document.createElement("input"); inp.className="t"; inp.value=p[k];
+      inp.onchange=()=>{ const v=parseT(inp.value); if(v!=null){p[k]=fmtT(v); inp.value=p[k];} renderAll(); persist(); };
+      td.appendChild(inp); tr.appendChild(td);
+    });
+
+    const tdL=document.createElement("td");
+    const cbL=document.createElement("input"); cbL.type="checkbox"; cbL.checked=!p.noLunch;
+    cbL.title="Bocka ur om personen inte behöver lunch denna dag";
+    cbL.onchange=()=>{ p.noLunch=!cbL.checked; renderAll(); persist(); };
+    tdL.appendChild(cbL); tr.appendChild(tdL);
+
+    const tdD=document.createElement("td");
+    const wrap=document.createElement("div"); wrap.className="dept-tags";
+    DEPTS.filter(d=>!d.special && d.id!=="mote" && d.id!=="uppgift").forEach(d=>{
+      const t=document.createElement("span");
+      t.className="dept-tag"+(p.home.includes(d.id)?" on":"");
+      t.style.background=d.color; t.style.color=d.text;
+      t.textContent=d.name;
+      t.onclick=()=>{
+        if(p.home.includes(d.id)) p.home=p.home.filter(x=>x!==d.id);
+        else p.home.push(d.id);
+        renderAll();
+        persist();
+      };
+      wrap.appendChild(t);
+    });
+    tdD.appendChild(wrap); tr.appendChild(tdD);
+
+    const tdX=document.createElement("td");
+    const bx=document.createElement("button"); bx.className="btn-small"; bx.style.background="#eee"; bx.textContent="Ta bort";
+    bx.onclick=()=>{ pushUndo(); state.staff=state.staff.filter(x=>x.id!==p.id); delete state.assignments[p.id]; delete state.manual[p.id]; renderAll(); persist(); toast(p.name+" borttagen – Ångra för att få tillbaka"); };
+    tdX.appendChild(bx); tr.appendChild(tdX);
+
+    tb.appendChild(tr);
+  });
+}
+
+function renderGrid(cov, gaps){
+  const tbl=document.getElementById("gridTable");
+  tbl.innerHTML="";
+
+  // Lucka-markering: vilka (slot) är gap i någon avdelning
+  const gapSlots=new Set();
+  gaps.forEach(g=>{for(let i=g.from;i<=g.to;i++) gapSlots.add(i);});
+
+  // Header: timmar
+  const trH=document.createElement("tr");
+  trH.appendChild(Object.assign(document.createElement("th"),{textContent:""}));
+  for(let h=DAY_START; h<DAY_END; h+=60){
+    const th=document.createElement("th");
+    th.colSpan = Math.min(2, (DAY_END-h)/STEP);
+    th.textContent = fmtT(h).slice(0,5)+"–"+fmtT(Math.min(h+60,DAY_END)).slice(0,5);
+    trH.appendChild(th);
+  }
+  tbl.appendChild(trH);
+
+  state.staff.forEach(p=>{
+    const tr=document.createElement("tr");
+    const tdName=document.createElement("td");
+    tdName.className="name"; tdName.textContent=p.name;
+    tr.appendChild(tdName);
+    const s=parseT(p.start), e=parseT(p.end);
+    for(let i=0;i<NSLOTS;i++){
+      const td=document.createElement("td");
+      td.className="slot";
+      if(!worksSlot(p,i)){
+        td.classList.add("na");
+      } else {
+        const dep=getAsg(p.id,i);
+        if(dep){
+          const d=deptById(dep);
+          td.style.background=d.color;
+          if(dep==="lunch"){ td.style.background="#fff"; td.innerHTML="<span style='font-size:9px;font-weight:800'>LUNCH</span>"; }
+          td.title=p.name+" "+fmtT(slotStart(i))+" – "+d.name+(isManual(p.id,i)?" (manuellt låst)":"");
+          if(isManual(p.id,i)) td.insertAdjacentHTML("beforeend","<span style='position:absolute;bottom:1px;right:2px;font-size:8px;font-weight:900'>•</span>");
+        } else {
+          td.title=p.name+" "+fmtT(slotStart(i))+" – oplacerad";
+        }
+        // start/slut-tider som inte ligger på hel/halv timme
+        if(s>slotStart(i) && s<slotStart(i)+STEP) td.insertAdjacentHTML("beforeend","<span class='tm'>"+fmtT(s)+"</span>");
+        if(e>slotStart(i) && e<slotStart(i)+STEP) td.insertAdjacentHTML("beforeend","<span class='tm' style='left:auto;right:1px'>"+fmtT(e)+"</span>");
+        // markera om denna person kan täcka en lucka just här
+        if(gapSlots.has(i) && !getAsg(p.id,i)) td.classList.add("gapmark");
+
+        td.addEventListener("mousedown",ev=>{ev.preventDefault(); painting=true; pushUndo(); paint(p.id,i);});
+        td.addEventListener("mouseenter",()=>{ if(painting) paint(p.id,i); });
+        td.addEventListener("touchstart",ev=>{ev.preventDefault(); pushUndo(); paint(p.id,i);},{passive:false});
+      }
+      tr.appendChild(td);
+    }
+    tbl.appendChild(tr);
+  });
+}
+function paint(pid,i){
+  setAsg(pid,i, paintErase?null:selectedDept);
+  setManual(pid,i, !paintErase);
+  renderAll(true);
+}
+document.addEventListener("mouseup",()=>{painting=false;});
+
+function renderCoverage(cov, gaps){
+  const tbl=document.getElementById("covTable");
+  tbl.innerHTML="";
+  const os=parseT(state.openStart), oe=parseT(state.openEnd);
+  const hours=[];
+  for(let h=DAY_START;h<DAY_END;h+=60) hours.push(h);
+
+  const trH=document.createElement("tr");
+  trH.appendChild(Object.assign(document.createElement("th"),{textContent:"Avdelning"}));
+  hours.forEach(h=>trH.appendChild(Object.assign(document.createElement("th"),{textContent:fmtT(h)})));
+  tbl.appendChild(trH);
+
+  reqIds().forEach(dId=>{
+    const d=deptById(dId); if(!d) return;
+    const m=minFor(dId);
+    const tr=document.createElement("tr");
+    const tdN=document.createElement("td"); tdN.className="deptname";
+    tdN.innerHTML="<span style='display:inline-block;width:12px;height:12px;background:"+d.color+";border:1px solid #999;margin-right:6px;vertical-align:middle'></span>"+d.name+(m>1?" (min "+m+")":"");
+    tr.appendChild(tdN);
+    hours.forEach(h=>{
+      const i1=(h-DAY_START)/STEP, i2=i1+1;
+      const inOpen = h+60>os && h<oe;
+      const td=document.createElement("td");
+      if(!inOpen){ td.className="c-off"; td.textContent="–"; }
+      else{
+        const c1=cov[dId][i1]||0, c2=i2<NSLOTS?(cov[dId][i2]||0):c1;
+        const pairs=[];
+        if(slotStart(i1)>=os && slotStart(i1)<oe) pairs.push([c1, reqAt(dId,i1)]);
+        if(i2<NSLOTS && slotStart(i2)>=os && slotStart(i2)<oe) pairs.push([c2, reqAt(dId,i2)]);
+        const okAll = pairs.every(([c,r])=>c>=r);
+        const okNone = pairs.every(([c,r])=>c<r);
+        const mn=Math.min(...pairs.map(x=>x[0]));
+        const maxR=Math.max(...pairs.map(x=>x[1]));
+        const txt = maxR>1 ? mn+"/"+maxR : String(mn);
+        if(okAll){ td.className="c-ok"; td.textContent=txt; }
+        else if(okNone){ td.className="c-gap"; td.textContent=txt; }
+        else { td.className="c-half"; td.textContent="½"; }
+      }
+      tr.appendChild(td);
+    });
+    tbl.appendChild(tr);
+  });
+}
+
+function renderWarnings(cov, gaps){
+  const box=document.getElementById("warnBox");
+  box.innerHTML="";
+
+  // Lunchvarningar
+  const ws=parseT(state.lunchStart), we=parseT(state.lunchEnd);
+  const lunchWarn=[], lunchImpossible=[], lunchOutside=[];
+  state.staff.forEach(p=>{
+    const s=parseT(p.start), e=parseT(p.end);
+    if(s==null||e==null) return;
+    if(needsLunch(p)){
+      if(!hasLunch(p)){
+        // hinner personen ens lunch inom fönstret?
+        if(Math.min(e,we)-Math.max(s,ws) < +state.lunchLen) lunchImpossible.push(p.name);
+        else lunchWarn.push(p.name);
+      }
+    }
+    // lunch utanför fönstret?
+    for(let i=0;i<NSLOTS;i++){
+      if(getAsg(p.id,i)==="lunch" && (slotStart(i)<ws || slotStart(i)+STEP>we)){
+        lunchOutside.push(p.name+" "+fmtT(slotStart(i)));
+      }
+    }
+  });
+
+  // fler än tillåtet på lunch samtidigt?
+  const lunchOver=[], maxL=+state.maxLunch||2;
+  {
+    const cnt=new Array(NSLOTS).fill(0);
+    state.staff.forEach(p=>{ for(let i=0;i<NSLOTS;i++) if(getAsg(p.id,i)==="lunch" && worksSlot(p,i)) cnt[i]++; });
+    for(let i=0;i<NSLOTS;i++) if(cnt[i]>maxL) lunchOver.push(fmtT(slotStart(i))+" ("+cnt[i]+" st)");
+  }
+
+  if(gaps.length===0 && lunchWarn.length===0 && lunchOutside.length===0 && lunchImpossible.length===0 && lunchOver.length===0){
+    const ok=document.createElement("div"); ok.className="all-ok";
+    ok.textContent="✓ Alla avdelningar är täckta och alla luncher är inplanerade.";
+    box.appendChild(ok);
+    return;
+  }
+
+  gaps.forEach(g=>{
+    const d=deptById(g.dept);
+    const div=document.createElement("div"); div.className="warn-item";
+    const from=fmtT(slotStart(g.from)), to=fmtT(slotStart(g.to)+STEP);
+    div.innerHTML="<b>⚠ "+d.name+" har för lite bemanning "+from+"–"+to+(g.need>1?" (behöver minst "+g.need+")":"")+"</b>";
+    const sugg=suggestionsFor(g,cov);
+    if(sugg.length===0){
+      div.insertAdjacentHTML("beforeend","<div class='sugg'>Ingen kan flyttas utan att skapa en ny lucka – någon behöver täcka delvis eller extra person kallas in.</div>");
+    }
+    sugg.forEach(sg=>{
+      const row=document.createElement("div"); row.className="sugg";
+      row.innerHTML="<span>Flytta <b>"+sg.p.name+"</b> (nu: "+sg.from+")"+(sg.knows?" – van vid "+d.name:"")+"</span>";
+      const b=document.createElement("button"); b.className="btn-accent btn-small"; b.textContent="Placera";
+      b.onclick=()=>applySuggestion(sg.p.id,g);
+      row.appendChild(b);
+      div.appendChild(row);
+    });
+    box.appendChild(div);
+  });
+
+  if(lunchWarn.length){
+    const div=document.createElement("div"); div.className="warn-item soft";
+    div.innerHTML="<b>🍽 Lunch saknas för: "+lunchWarn.join(", ")+"</b><div class='sugg'>Klicka \u201dPlanera luncher\u201d eller måla in lunch (vit) mellan "+state.lunchStart+"–"+state.lunchEnd+". Kravet: minst en kollega måste vara kvar på avdelningen under tiden.</div>";
+    const b=document.createElement("button"); b.className="btn-accent btn-small"; b.textContent="Planera luncher";
+    b.onclick=()=>{pushUndo(); const res=planLunches(); renderAll(); toast(res.placed.length+" luncher planerade"); if(res.failed.length) toast("Gick inte för: "+res.failed.join(", "), true);};
+    div.appendChild(b);
+    box.appendChild(div);
+  }
+  if(lunchOutside.length){
+    const div=document.createElement("div"); div.className="warn-item soft";
+    div.innerHTML="<b>🍽 Lunch utanför fönstret "+state.lunchStart+"–"+state.lunchEnd+": "+lunchOutside.join(", ")+"</b><div class='sugg'>Ibland nödvändigt när fönstret är fullt eller täckningen kräver det – kontrollera att tiderna funkar.</div>";
+    box.appendChild(div);
+  }
+  if(lunchOver.length){
+    const div=document.createElement("div"); div.className="warn-item";
+    div.innerHTML="<b>🍽 Fler än "+maxL+" på lunch samtidigt: "+lunchOver.join(", ")+"</b><div class='sugg'>Max "+maxL+" i hela huset får vara på lunch samtidigt (ändras i Inställningar) – flytta någons lunch.</div>";
+    box.appendChild(div);
+  }
+  if(lunchImpossible.length){
+    const div=document.createElement("div"); div.className="warn-item soft";
+    div.innerHTML="<b>🍽 Hinner ingen lunch inom fönstret: "+lunchImpossible.join(", ")+"</b><div class='sugg'>Passet överlappar inte lunchfönstret tillräckligt – lös manuellt eller justera fönstret.</div>";
+    box.appendChild(div);
+  }
+}
+
+function renderAll(skipStaff){
+  state.lunchStart=state.lunchStart||"12:00"; state.lunchEnd=state.lunchEnd||"14:00"; state.lunchLen=30; state.maxLunch=state.maxLunch||2;
+  document.getElementById("openStart").value=state.openStart;
+  document.getElementById("openEnd").value=state.openEnd;
+  document.getElementById("lunchStart").value=state.lunchStart;
+  document.getElementById("lunchEnd").value=state.lunchEnd;
+  document.getElementById("maxLunch").value=String(state.maxLunch);
+  const cov=coverage();
+  const gaps=findGaps(cov);
+  if(!skipStaff) renderStaff();
+  renderPalette();
+  renderReqList();
+  renderGrid(cov,gaps);
+  renderCoverage(cov,gaps);
+  renderWarnings(cov,gaps);
+  const dt=state.date? new Date(state.date+"T12:00:00") : new Date();
+  const days=["Söndag","Måndag","Tisdag","Onsdag","Torsdag","Fredag","Lördag"];
+  const months=["januari","februari","mars","april","maj","juni","juli","augusti","september","oktober","november","december"];
+  document.getElementById("printTitle").textContent = days[dt.getDay()]+" "+dt.getDate()+" "+months[dt.getMonth()];
+  scheduleAutosave();
+}
+
+/* ---------- Export till gruppchatt ---------- */
+function drawPng(){
+  const nameW=110, cellW=30, rowH=26, headH=24, titleH=46, pad=12, scale=2;
+  const W=nameW+NSLOTS*cellW+pad*2;
+  const H=titleH+headH+state.staff.length*rowH+40+pad*2;
+  const cv=document.createElement("canvas"); cv.width=W*scale; cv.height=H*scale;
+  const ctx=cv.getContext("2d"); ctx.scale(scale,scale);
+  ctx.fillStyle="#fff"; ctx.fillRect(0,0,W,H);
+  ctx.fillStyle="#000"; ctx.font="900 24px Arial"; ctx.textAlign="center";
+  ctx.fillText(document.getElementById("printTitle").textContent.toUpperCase(), W/2, pad+24);
+  const top=titleH+pad;
+  ctx.font="700 11px Arial";
+  for(let h=DAY_START;h<DAY_END;h+=60){
+    const i=(h-DAY_START)/STEP;
+    const x=pad+nameW+i*cellW;
+    const w=Math.min(2,(DAY_END-h)/STEP)*cellW;
+    ctx.strokeStyle="#000"; ctx.strokeRect(x,top,w,headH);
+    ctx.fillStyle="#000"; ctx.textAlign="center";
+    ctx.fillText(fmtT(h), x+w/2, top+16);
+  }
+  state.staff.forEach((p,r)=>{
+    const y=top+headH+r*rowH;
+    const s=parseT(p.start), e=parseT(p.end);
+    ctx.strokeStyle="#000"; ctx.strokeRect(pad,y,nameW,rowH);
+    ctx.fillStyle="#000"; ctx.textAlign="left"; ctx.font="800 11px Arial";
+    ctx.fillText(p.name.toUpperCase(), pad+5, y+17);
+    for(let i=0;i<NSLOTS;i++){
+      const x=pad+nameW+i*cellW;
+      if(!worksSlot(p,i)){ ctx.fillStyle="#eeeeee"; ctx.fillRect(x,y,cellW,rowH); }
+      else{
+        const dep=getAsg(p.id,i);
+        if(dep){
+          const d=deptById(dep);
+          ctx.fillStyle = dep==="lunch" ? "#ffffff" : d.color;
+          ctx.fillRect(x,y,cellW,rowH);
+          if(dep==="lunch"){ ctx.fillStyle="#000"; ctx.font="800 8px Arial"; ctx.textAlign="center"; ctx.fillText("LUNCH", x+cellW/2, y+16); }
+        }
+        ctx.fillStyle="#000"; ctx.font="800 8px Arial";
+        if(s>slotStart(i)&&s<slotStart(i)+STEP){ ctx.textAlign="left"; ctx.fillText(fmtT(s), x+1, y+9); }
+        if(e>slotStart(i)&&e<slotStart(i)+STEP){ ctx.textAlign="right"; ctx.fillText(fmtT(e), x+cellW-1, y+9); }
+      }
+      ctx.strokeStyle="#888"; ctx.strokeRect(x,y,cellW,rowH);
+    }
+  });
+  // legend
+  let lx=pad; const ly=top+headH+state.staff.length*rowH+12;
+  ctx.font="700 10px Arial";
+  DEPTS.filter(d=>!d.special).forEach(d=>{
+    const w=ctx.measureText(d.name).width+18;
+    ctx.fillStyle=d.color; ctx.fillRect(lx,ly,w,18);
+    ctx.strokeStyle="#000"; ctx.strokeRect(lx,ly,w,18);
+    ctx.fillStyle=d.text; ctx.textAlign="center"; ctx.fillText(d.name, lx+w/2, ly+13);
+    lx+=w+6;
+  });
+  showPngOverlay(cv);
+}
+
+function showPngOverlay(cv){
+  const url=cv.toDataURL("image/png");
+  const old=document.getElementById("pngOverlay"); if(old) old.remove();
+  const ov=document.createElement("div");
+  ov.id="pngOverlay";
+  ov.style.cssText="position:fixed;inset:0;background:rgba(0,0,0,.78);z-index:200;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:16px;";
+  const img=document.createElement("img");
+  img.src=url;
+  img.style.cssText="max-width:95%;max-height:72vh;background:#fff;border:2px solid #fff;border-radius:4px;";
+  const bar=document.createElement("div");
+  bar.style.cssText="display:flex;gap:10px;flex-wrap:wrap;justify-content:center;";
+  const mkBtn=(txt,fn,accent)=>{const b=document.createElement("button");b.textContent=txt;b.className=accent?"btn-accent":"btn-ghost";b.onclick=fn;return b;};
+  bar.appendChild(mkBtn("Kopiera bild",async ()=>{
+    try{
+      const blob=await new Promise(res=>cv.toBlob(res,"image/png"));
+      await navigator.clipboard.write([new ClipboardItem({"image/png":blob})]);
+      toast("Bilden kopierad – klistra in direkt i gruppchatten");
+    }catch(e){
+      toast("Kunde inte kopiera automatiskt – håll in/högerklicka på bilden och välj Kopiera bild", true);
+    }
+  }, true));
+  bar.appendChild(mkBtn("Ladda ner", ()=>{
+    try{
+      const a=document.createElement("a");
+      a.download="schema-"+state.date+".png"; a.href=url;
+      document.body.appendChild(a); a.click(); a.remove();
+      toast("Om ingen fil dök upp: håll in/högerklicka på bilden och välj Spara bild");
+    }catch(e){ toast("Nedladdning blockerad – håll in/högerklicka på bilden och Spara bild", true); }
+  }));
+  bar.appendChild(mkBtn("Stäng", ()=>ov.remove()));
+  const hint=document.createElement("div");
+  hint.style.cssText="color:#fff;font-size:13px;text-align:center;max-width:600px;";
+  hint.textContent="Mobil: håll in bilden och välj Spara/Dela. Dator: högerklicka och Spara bild som… eller använd Kopiera bild och klistra in i chatten.";
+  ov.appendChild(img); ov.appendChild(bar); ov.appendChild(hint);
+  ov.onclick=e=>{ if(e.target===ov) ov.remove(); };
+  document.body.appendChild(ov);
+}
+
+function chatText(){
+  const lines=["📅 SCHEMA – "+document.getElementById("printTitle").textContent.toUpperCase(), ""];
+  state.staff.forEach(p=>{
+    const s=parseT(p.start), e=parseT(p.end);
+    const segs=[]; let cur=null;
+    for(let i=0;i<NSLOTS;i++){
+      if(!worksSlot(p,i)){ if(cur){segs.push(cur); cur=null;} continue; }
+      const d=getAsg(p.id,i);
+      const nm=d?deptById(d).name:"?";
+      const from=Math.max(slotStart(i),s), to=Math.min(slotStart(i)+STEP,e);
+      if(cur && cur.nm===nm) cur.to=to;
+      else { if(cur)segs.push(cur); cur={nm, from, to}; }
+    }
+    if(cur)segs.push(cur);
+    lines.push("• "+p.name+" ("+p.start+"–"+p.end+"): "+segs.map(sg=>sg.nm+" "+fmtT(sg.from)+"–"+fmtT(sg.to)).join(", "));
+  });
+  return lines.join("\n");
+}
+function copyChat(){
+  const txt=chatText();
+  const done=()=>toast("Chatt-text kopierad – klistra in i gruppchatten");
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(txt).then(done, ()=>fallbackCopy(txt, done));
+  } else fallbackCopy(txt, done);
+}
+function fallbackCopy(txt, done){
+  const ta=document.createElement("textarea");
+  ta.value=txt; document.body.appendChild(ta); ta.select();
+  try{ document.execCommand("copy"); done(); }catch(e){ prompt("Kopiera texten manuellt:", txt); }
+  document.body.removeChild(ta);
+}
+
+/* ---------- Spara/ladda ---------- */
+async function saveDay(){
+  try{
+    await store.set("xxl-schema-"+state.date, JSON.stringify(state));
+    await saveRegister();
+    toast("Dagen sparad ("+state.date+")");
+  }catch(e){ toast("Kunde inte spara: "+e.message, true); }
+}
+function migrate(st){
+  if(!st.manual) st.manual={};
+  if(!st.mins){
+    st.mins={};
+    DEPTS.filter(d=>!d.special).forEach(d=>{ st.mins[d.id]=(st.required||[]).includes(d.id)?1:0; });
+    delete st.required;
+  }
+  (st.staff||[]).forEach(p=>{ p.home=(p.home||[]).map(h=>h==="cykel"?"sboh":h).filter((v,i,a)=>a.indexOf(v)===i); });
+  Object.values(st.assignments||{}).forEach(m=>{ Object.keys(m).forEach(k=>{ if(m[k]==="cykel") m[k]="sboh"; }); });
+  return st;
+}
+async function loadDay(date){
+  try{
+    const r=await store.get("xxl-schema-"+date);
+    if(r && r.value){
+      loading=true;
+      undoStack.length=0;
+      state=migrate(JSON.parse(r.value)); state.date=date;
+      renderAll();
+      loading=false;
+      return true;
+    }
+  }catch(e){/* finns inte */}
+  return false;
+}
+async function newDay(date){
+  // ny dag: behåll personalregistret men rensa placeringar
+  undoStack.length=0;
+  state.date=date;
+  state.assignments={};
+  state.manual={};
+  await loadRegister();
+  renderAll();
+  toast("Ny dag – personalen hämtad från registret, schemat tomt");
+}
+
+/* ---------- Events ---------- */
+document.getElementById("btnAuto").onclick=autoPlaceAll;
+document.getElementById("btnUndo").onclick=undo;
+document.addEventListener("keydown",e=>{ if((e.ctrlKey||e.metaKey) && e.key==="z"){ e.preventDefault(); undo(); } });
+document.getElementById("btnFix").onclick=()=>{
+  pushUndo();
+  const moves=fixGaps();
+  renderAll();
+  if(moves.length) toast("Löste luckor: "+moves.join(", "));
+  const remaining=findGaps(coverage());
+  if(remaining.length) toast(remaining.length+" luckor kvar – ingen kan flyttas dit utan att skapa nya. Lägg till avdelningsvana eller måla manuellt.", true);
+  else if(!moves.length) toast("Inga luckor att fixa – allt är redan täckt");
+};
+document.getElementById("btnClear").onclick=()=>{
+  pushUndo();
+  state.assignments={}; state.manual={};
+  renderAll();
+  toast("Schemat rensat – klicka Ångra om det var ett misstag");
+};
+document.getElementById("btnSave").onclick=saveDay;
+document.getElementById("btnCopy").onclick=copyChat;
+document.getElementById("btnPng").onclick=()=>{ drawPng(); };
+document.getElementById("btnPrint").onclick=()=>window.print();
+document.getElementById("btnAddStaff").onclick=async ()=>{
+  state.staff.push({id:nextId++, name:"Ny person", start:"10:00", end:"18:00", home:[]});
+  renderAll();
+  const ok=await persist();
+  toast(ok ? "Person tillagd och sparad – fyll i namn och tider" : "Person tillagd men kunde INTE sparas – lagring saknas i denna miljö", !ok);
+};
+document.getElementById("btnSaveStaff").onclick=async ()=>{
+  const ok=await persist();
+  toast(ok ? "Personal sparad – "+state.staff.length+" personer i registret" : "Kunde INTE spara – lagring saknas i denna miljö", !ok);
+};
+const dEl=document.getElementById("dateInput");
+dEl.value=state.date;
+dEl.onchange=async ()=>{ const d=dEl.value; const loaded=await loadDay(d); if(!loaded) await newDay(d); };
+document.getElementById("openStart").onchange=e=>{state.openStart=e.target.value; renderAll();};
+document.getElementById("openEnd").onchange=e=>{state.openEnd=e.target.value; renderAll();};
+document.getElementById("btnLunch").onclick=()=>{
+  pushUndo();
+  const res=planLunches(); renderAll();
+  toast(res.placed.length+" luncher planerade"+(res.placed.length?": "+res.placed.join(", "):""));
+  if(res.failed.length) toast("Gick inte att placera lunch för: "+res.failed.join(", "), true);
+};
+document.getElementById("lunchStart").onchange=e=>{state.lunchStart=e.target.value; renderAll();};
+document.getElementById("lunchEnd").onchange=e=>{state.lunchEnd=e.target.value; renderAll();};
+document.getElementById("maxLunch").onchange=e=>{state.maxLunch=+e.target.value; renderAll();};
+
+/* ---------- Start ---------- */
+loadDay(state.date).then(async loaded=>{
+  if(!loaded) await loadRegister();
+  applySeedIfEmpty();
+  renderAll();
+});
+})();
+</script>
+</body>
+</html>
