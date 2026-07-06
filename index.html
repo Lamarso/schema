@@ -273,23 +273,6 @@ const isManual = (pid,i) => !!(state.manual[pid]||{})[i];
 const setManual = (pid,i,val) => { if(!state.manual[pid]) state.manual[pid]={}; if(val) state.manual[pid][i]=true; else delete state.manual[pid][i]; };
 
 
-/* ---------- Förifyllt testschema (appliceras per namn om dagen är tom) ---------- */
-const SEED={"Fredde":{"slots":{"0":"lager","1":"lager","2":"lager","3":"lager","4":"lager","5":"lager","6":"lager","7":"lager","8":"lager","9":"lager","10":"lager","11":"lager","12":"lunch","13":"lager","14":"lager","15":"lager","16":"lager","17":"lager"},"home":["lager"],"noLunch":false},"Rebecca":{"slots":{"0":"lager","1":"lager","2":"lager","3":"lager","4":"lager","5":"lager","6":"lager","7":"lager","8":"lager","9":"lager","10":"lager","11":"lager"},"home":["lager"],"noLunch":true},"Amanda":{"slots":{"2":"kassa","3":"kassa","4":"kassa","5":"kassa","6":"kassa","7":"kassa","8":"kassa","9":"kassa","10":"kassa","11":"kassa","12":"kassa","13":"lunch","14":"kassa","15":"kassa","16":"kassa","17":"kassa"},"home":["kassa"],"noLunch":false},"Oskar":{"slots":{"2":"lyskor","3":"lyskor","4":"lyskor","5":"lyskor","6":"lyskor","7":"lyskor","8":"lyskor","9":"lyskor","10":"lyskor","11":"lyskor","12":"lunch","13":"lyskor","14":"lyskor","15":"lyskor"},"home":["lyskor"],"noLunch":false},"Toni":{"slots":{"4":"verkstad","5":"verkstad","6":"verkstad","7":"verkstad","8":"verkstad","9":"verkstad","10":"verkstad","11":"verkstad","12":"verkstad","13":"lunch","14":"verkstad","15":"verkstad","16":"verkstad","17":"verkstad","18":"verkstad","19":"verkstad","20":"verkstad","21":"verkstad"},"home":["verkstad"],"noLunch":false},"Beata":{"slots":{"7":"klader","8":"klader","9":"klader","10":"klader","11":"klader","12":"klader","13":"klader","14":"lunch","15":"klader","16":"klader","17":"klader","18":"klader","19":"klader","20":"klader","21":"klader","22":"klader","23":"klader","24":"klader","25":"klader"},"home":["klader"],"noLunch":false},"Marcus":{"slots":{"7":"sboh","8":"sboh","9":"sboh","10":"sboh","11":"sboh","12":"sboh","13":"sboh","14":"lunch","15":"sboh","16":"sboh","17":"sboh","18":"sboh","19":"sboh","20":"sboh","21":"sboh","22":"sboh","23":"sboh","24":"sboh","25":"sboh"},"home":["sboh","verkstad"],"noLunch":false},"Anders":{"slots":{"10":"sport","11":"sport","12":"sport","13":"sport","14":"sport","15":"sport","16":"sport","17":"sport","18":"sport","19":"sport"},"home":["sport"],"noLunch":false},"Elias P":{"slots":{"10":"sport","11":"sport","12":"sport","13":"sport","14":"klader","15":"lunch","16":"sport","17":"sport","18":"sport","19":"sport","20":"sport","21":"sport","22":"sport","23":"sport","24":"sport","25":"sport","26":"klader","27":"klader"},"home":["sport","sboh","klader"],"noLunch":false},"Jacob":{"slots":{"10":"sboh","11":"sboh","12":"sboh","13":"sboh","14":"sboh","15":"sboh","16":"lunch","17":"sboh","18":"sboh","19":"sboh","20":"sboh","21":"sboh","22":"sboh","23":"sboh","24":"sboh","25":"sboh","26":"sboh","27":"sboh","28":"sboh"},"home":["sboh"],"noLunch":false},"Noah A":{"slots":{"10":"ohskor","11":"ohskor","12":"ohskor","13":"ohskor","14":"ohskor","15":"ohskor","16":"ohskor","17":"ohskor","18":"ohskor","19":"ohskor","20":"ohskor","21":"lunch","22":"ohskor","23":"ohskor","24":"ohskor","25":"ohskor"},"home":["sport","kassa","ohskor"],"noLunch":false},"Tilde":{"slots":{"10":"kassa","11":"kassa","12":"kassa","13":"kassa","14":"kassa","15":"kassa","16":"lunch","17":"kassa","18":"kassa","19":"kassa","20":"kassa","21":"kassa","22":"kassa","23":"kassa","24":"kassa","25":"kassa","26":"kassa","27":"kassa","28":"kassa"},"home":["kassa"],"noLunch":false},"Noah B":{"slots":{"12":"lyskor","13":"lyskor","14":"lyskor","15":"lunch","16":"lyskor","17":"lyskor","18":"lyskor","19":"lyskor","20":"lyskor","21":"lyskor","22":"lyskor","23":"lyskor","24":"lyskor","25":"lyskor","26":"lyskor","27":"lyskor"},"home":["lyskor"],"noLunch":false},"Johanna H":{"slots":{"21":"ohskor","22":"sport","23":"sport","24":"sport","25":"sport","26":"sport","27":"sport"},"home":["sport","ohskor"],"noLunch":false}};
-function applySeedIfEmpty(){
-  const total=Object.values(state.assignments||{}).reduce((a,m)=>a+Object.keys(m).length,0);
-  if(total>0 || state.seeded) return;
-  let hit=0;
-  state.staff.forEach(p=>{
-    const sd=SEED[p.name];
-    if(!sd || !Object.keys(sd.slots).length) return;
-    state.assignments[p.id]=Object.assign({}, sd.slots);
-    sd.home.forEach(h=>{ if(!p.home.includes(h)) p.home.push(h); });
-    if(sd.noLunch) p.noLunch=true;
-    hit++;
-  });
-  if(hit){ state.seeded=true; toast("Testschemat inlagt för "+hit+" personer"); }
-}
-
 /* ---------- Ångra ---------- */
 const undoStack=[];
 function pushUndo(){
@@ -1102,7 +1085,6 @@ document.getElementById("maxLunch").onchange=e=>{state.maxLunch=+e.target.value;
 /* ---------- Start ---------- */
 loadDay(state.date).then(async loaded=>{
   if(!loaded) await loadRegister();
-  applySeedIfEmpty();
   renderAll();
 });
 })();
