@@ -136,3 +136,22 @@ Tid ↔ slot: `slotStart(i) = 6*60 + i*30`. Dagen är 06:00–20:30, 29 slots (N
   smalare namnkolumn med ellipsis, ram runt scrollytan, fullbredds-notiser.
 - 2026-07-06: La till "↩ Ångra"-knapp i paletten direkt efter "✕ Sudda" (anropar samma
   `undo()`), så ångra finns nära där man målar – praktiskt på mobil vid feltryck.
+- 2026-07-06: Bytte `.claude/skills/frontend-design/SKILL.md` mot den ordagranna filen
+  från `anthropics/skills` (generell design-vägledning, inte projektspecifik). Den ersätter
+  en tidigare egenskriven variant som innehöll bl.a. regeln "desktop är fryst" – den regeln
+  finns INTE längre i skill-filen. `.claude/launch.json` tillagd (node-baserad statisk
+  server på port 8123) så framtida sessioner kan starta förhandsvisning här utan att
+  Pythons http.server (blockeras av sandlådan i denna Dropbox-mapp).
+- 2026-07-06: Visuell omdesign av `index.html` genomförd på uttrycklig begäran (Ammar gav
+  tillåtelse att även ändra desktop, som annars hållits fryst). Tema: schemat behandlat
+  som en "avgångstavla" – alla tider (grid-header, hörntider, täckningstabellens timmar)
+  i monospace/tabular-nums, 3px accentfärgad signalrand under headern, accentfärgad
+  vänsterkant på sektionsrubriker, hover/active-feedback på knappar/chips, fokusringar
+  och `prefers-reduced-motion`-stöd, `aria-live` på notiser, samt en skugga i schemats
+  högerkant som visar/döljer sig beroende på om det finns mer att scrolla sidledes
+  (`updateGridScrollFade()`). Avdelningsfärgerna i `DEPTS` rördes INTE – de är riktiga
+  butiksskyltnings-färger, inte dekoration. Verifierat i förhandsvisning: målning, ångra,
+  notiser, mobil scroll-fade och touch-hantering fungerar som förut.
+  **OBS till nästa session:** "desktop är fryst"-regeln är nu upphävd för denna omgång på
+  Ammars uttryckliga begäran. Fråga innan ni gör ytterligare stora visuella ändringar på
+  desktop – anta inte fritt mandat bara för att det begärdes en gång.

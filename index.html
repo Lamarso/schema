@@ -6,23 +6,28 @@
 <title>XXL Dagsschema</title>
 <style>
   :root{
-    --ink:#16181c; --paper:#f5f6f4; --panel:#ffffff; --line:#d8dbd4;
+    --ink:#16181c; --ink-soft:#5b5f57; --paper:#f5f6f4; --panel:#ffffff; --line:#d8dbd4;
     --accent:#b5cf1f; --accent-ink:#2a3005; --danger:#d32f2f; --warn:#e6a300; --ok:#2e7d32;
+    --font-display:"Arial Narrow","Segoe UI",Arial,sans-serif;
+    --font-mono:ui-monospace,"SF Mono",Menlo,Consolas,"Segoe UI",monospace;
   }
   *{box-sizing:border-box; margin:0; padding:0;}
-  body{font-family:"Segoe UI", Arial, sans-serif; background:var(--paper); color:var(--ink); font-size:14px;}
-  header{background:var(--ink); color:#fff; padding:14px 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap;}
-  header h1{font-size:20px; font-weight:900; letter-spacing:1px; text-transform:uppercase;}
+  body{font-family:"Segoe UI", Arial, sans-serif; background:var(--paper); color:var(--ink); font-size:14px; -webkit-font-smoothing:antialiased;}
+  :focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  header{background:var(--ink); color:#fff; padding:14px 20px; display:flex; align-items:center; gap:16px; flex-wrap:wrap; border-bottom:3px solid var(--accent);}
+  header h1{font-family:var(--font-display); font-size:21px; font-weight:900; letter-spacing:1.5px; text-transform:uppercase;}
   header h1 span{color:var(--accent);}
   header .spacer{flex:1;}
-  header input[type=date]{padding:6px 8px; border-radius:4px; border:none; font-size:14px;}
-  button{cursor:pointer; border:none; border-radius:4px; padding:8px 14px; font-weight:700; font-size:13px;}
+  header input[type=date]{padding:6px 8px; border-radius:4px; border:none; font-size:14px; font-family:var(--font-mono);}
+  button{cursor:pointer; border:none; border-radius:4px; padding:8px 14px; font-weight:700; font-size:13px; transition:filter .12s ease, transform .05s ease;}
+  button:hover{filter:brightness(1.08);}
+  button:active{transform:translateY(1px);}
   .btn-accent{background:var(--accent); color:var(--accent-ink);}
   .btn-ghost{background:#3a3d44; color:#fff;}
   .btn-small{padding:4px 10px; font-size:12px;}
   main{padding:16px 20px; max-width:1500px; margin:0 auto;}
   section{background:var(--panel); border:1px solid var(--line); border-radius:8px; margin-bottom:16px; overflow:hidden;}
-  section > h2{font-size:13px; text-transform:uppercase; letter-spacing:1px; padding:10px 14px; background:#eef0ea; border-bottom:1px solid var(--line); display:flex; align-items:center; gap:10px;}
+  section > h2{font-family:var(--font-display); font-size:13px; text-transform:uppercase; letter-spacing:1.5px; padding:10px 14px; background:#eef0ea; border-bottom:1px solid var(--line); border-left:4px solid var(--accent); display:flex; align-items:center; gap:10px;}
   section > h2 .h2-actions{margin-left:auto; display:flex; gap:8px;}
   .section-body{padding:14px;}
 
@@ -38,25 +43,28 @@
 
   /* Palett */
   .palette{display:flex; gap:6px; flex-wrap:wrap; align-items:center;}
-  .chip{padding:7px 12px; border-radius:4px; font-weight:700; font-size:12px; border:3px solid transparent; cursor:pointer; text-transform:uppercase;}
+  .chip{padding:7px 12px; border-radius:4px; font-weight:700; font-size:12px; border:3px solid transparent; cursor:pointer; text-transform:uppercase; transition:transform .08s ease;}
+  .chip:hover{transform:translateY(-1px);}
   .chip.sel{border-color:var(--ink); box-shadow:0 0 0 2px #fff inset;}
-  .hint{font-size:12px; color:#666; margin-top:8px;}
+  .hint{font-size:12px; color:var(--ink-soft); margin-top:8px;}
 
-  /* Schema-grid */
-  .grid-wrap{overflow-x:auto;}
+  /* Schema-grid: layout som en avgångstavla – klar tidsrytm, låst namnkolumn */
+  .grid-wrap{overflow-x:auto; position:relative;}
+  .grid-wrap::after{content:""; position:absolute; top:0; right:0; bottom:0; width:24px; pointer-events:none; background:linear-gradient(to right, transparent, rgba(0,0,0,.10)); opacity:0; transition:opacity .15s ease;}
+  .grid-wrap.has-more::after{opacity:1;}
   table.grid{border-collapse:collapse; user-select:none;}
   table.grid th, table.grid td{border:1px solid #9aa093; font-size:11px; text-align:center;}
-  table.grid th{background:#eef0ea; padding:4px 2px; font-weight:700;}
-  table.grid td.name{background:#fff; font-weight:800; text-align:left; padding:4px 8px; white-space:nowrap; position:sticky; left:0; z-index:2; border-right:2px solid var(--ink); font-size:12px; text-transform:uppercase;}
+  table.grid th{background:#eef0ea; padding:4px 2px; font-weight:700; font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+  table.grid td.name{background:#fff; font-weight:800; text-align:left; padding:4px 8px; white-space:nowrap; position:sticky; left:0; z-index:2; border-right:2px solid var(--ink); font-size:12px; text-transform:uppercase; box-shadow:2px 0 4px rgba(0,0,0,.06);}
   table.grid td.slot{width:34px; min-width:34px; height:30px; cursor:pointer; position:relative;}
   table.grid td.slot.na{background:repeating-linear-gradient(45deg,#f0f0f0,#f0f0f0 4px,#e2e2e2 4px,#e2e2e2 8px); cursor:not-allowed;}
-  table.grid td.slot .tm{font-size:9px; font-weight:800; color:#000; background:rgba(255,255,255,.75); border-radius:2px; padding:0 1px; position:absolute; top:1px; left:1px;}
+  table.grid td.slot .tm{font-family:var(--font-mono); font-variant-numeric:tabular-nums; font-size:9px; font-weight:800; color:#000; background:rgba(255,255,255,.75); border-radius:2px; padding:0 1px; position:absolute; top:1px; left:1px;}
   table.grid td.slot.gapmark{outline:2px dashed var(--danger); outline-offset:-2px;}
 
   /* Täckning */
   table.cov{border-collapse:collapse;}
-  table.cov th, table.cov td{border:1px solid var(--line); padding:4px 8px; font-size:12px; text-align:center;}
-  table.cov td.deptname{text-align:left; font-weight:700;}
+  table.cov th, table.cov td{border:1px solid var(--line); padding:4px 8px; font-size:12px; text-align:center; font-family:var(--font-mono); font-variant-numeric:tabular-nums;}
+  table.cov td.deptname{text-align:left; font-weight:700; font-family:"Segoe UI",Arial,sans-serif;}
   td.c-ok{background:#e5f2e5; color:var(--ok); font-weight:700;}
   td.c-gap{background:#fbdcdc; color:var(--danger); font-weight:900;}
   td.c-half{background:#fdf1d5; color:#8a6100; font-weight:700;}
@@ -96,6 +104,10 @@
   }
   .print-legend{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;}
   .print-legend .chip{cursor:default; border:1px solid #000; padding:3px 10px; font-size:11px;}
+
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
+  }
 
   /* ---------- Mobil (rör inte desktop) ---------- */
   @media (max-width:640px){
@@ -198,7 +210,7 @@
 </section>
 
 </main>
-<div id="toasts"></div>
+<div id="toasts" role="status" aria-live="polite"></div>
 <script>
 (function(){
 "use strict";
@@ -748,6 +760,7 @@ function renderGrid(cov, gaps){
     }
     tbl.appendChild(tr);
   });
+  updateGridScrollFade();
 }
 function paint(pid,i){
   setAsg(pid,i, paintErase?null:selectedDept);
@@ -755,6 +768,23 @@ function paint(pid,i){
   renderAll(true);
 }
 document.addEventListener("mouseup",()=>{painting=false;});
+
+// Visar en svag skugga i högerkanten av schemat så länge det finns mer att
+// scrolla sidledes – döljs automatiskt när man scrollat till slutet.
+function updateGridScrollFade(){
+  const wrap=document.querySelector(".grid-wrap");
+  if(!wrap) return;
+  const more = wrap.scrollWidth - wrap.clientWidth - wrap.scrollLeft > 4;
+  wrap.classList.toggle("has-more", more);
+}
+// Scriptet ligger sist i <body>, så .grid-wrap finns redan i DOM:en här.
+(()=>{
+  const wrap=document.querySelector(".grid-wrap");
+  if(wrap){
+    wrap.addEventListener("scroll",updateGridScrollFade,{passive:true});
+    window.addEventListener("resize",updateGridScrollFade);
+  }
+})();
 
 function renderCoverage(cov, gaps){
   const tbl=document.getElementById("covTable");
